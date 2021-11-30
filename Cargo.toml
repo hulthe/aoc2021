@@ -1,0 +1,22 @@
+[package]
+name = "aoc_2021"
+version = "0.0.0"
+authors = ["Joakim Hulthe <joakim@hulthe.net>"]
+description = "Solver for Advent of Code 2021"
+edition = "2021"
+
+[profile.bench]
+#debug = true # for profiling
+
+[dependencies]
+structopt="0.3"
+indicatif = "0.16"
+rayon = "1.5.0"
+regex = "1.4.2"
+lazy_static = "1.4.0"
+
+[dependencies.aoc_helpers]
+git = "https://github.com/hulthe/aoc_boiler.git"
+
+[dependencies.aoc_macro]
+git = "https://github.com/hulthe/aoc_boiler.git"
