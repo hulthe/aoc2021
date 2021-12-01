@@ -4,23 +4,19 @@ pub fn parse(input: &str) -> Vec<i32> {
         .collect()
 }
 
-pub fn part1(input: &str) -> usize {
-    let measurements = parse(input);
-    measurements
-        .windows(2)
-        .filter(|window| window.is_sorted())
+fn solver<const W: usize>(input: &str) -> usize {
+    parse(input)
+        .windows(W)
+        .filter(|win| win[0] < win[W - 1])
         .count()
 }
 
-pub fn part2(input: &str) -> usize {
-    let measurements = parse(input);
-    let windows = measurements
-        .windows(3)
-        .map(|win| win.iter().sum::<i32>());
+pub fn part1(input: &str) -> usize {
+    solver::<2>(input)
+}
 
-    windows.clone().zip(windows.skip(1))
-        .filter(|(prev, next)| next > prev)
-        .count()
+pub fn part2(input: &str) -> usize {
+    solver::<4>(input)
 }
 
 #[cfg(test)]
