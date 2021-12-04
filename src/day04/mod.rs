@@ -1,7 +1,11 @@
+use hashers::fx_hash::FxHasher;
 use std::collections::{HashMap, HashSet};
+use std::hash::BuildHasherDefault;
 
 type Number = u32;
 type Pos = (usize, usize);
+
+type Hasher = BuildHasherDefault<FxHasher>;
 
 pub struct Bingo {
     pub numbers: Vec<Number>,
@@ -10,7 +14,7 @@ pub struct Bingo {
 
 #[derive(Clone)]
 pub struct Board {
-    pub numbers: HashMap<Number, Pos>,
+    pub numbers: HashMap<Number, Pos, Hasher>,
 }
 
 pub fn parse(input: &str) -> Bingo {
@@ -31,7 +35,7 @@ pub fn parse(input: &str) -> Bingo {
                 .map(|(i, n)| (n, (i % 5, i / 5)))
                 .collect()
         })
-        .inspect(|numbers: &HashMap<_, _>| debug_assert_eq!(numbers.len(), 25))
+        .inspect(|numbers: &HashMap<_, _, Hasher>| debug_assert_eq!(numbers.len(), 25))
         .map(|numbers| Board { numbers })
         .collect();
 
@@ -46,7 +50,7 @@ fn col((x, y): Pos) -> impl Iterator<Item = Pos> {
     (0..5).filter(move |&cy| cy != y).map(move |cy| (x, cy))
 }
 
-fn check_if_board_won(placed: &HashSet<Pos>, check: &[Pos]) -> bool {
+fn check_if_board_won(placed: &HashSet<Pos, Hasher>, check: &[Pos]) -> bool {
     check
         .iter()
         .any(|&p| row(p).all(|p| placed.contains(&p)) || col(p).all(|p| placed.contains(&p)))
@@ -55,12 +59,12 @@ fn check_if_board_won(placed: &HashSet<Pos>, check: &[Pos]) -> bool {
 fn solver(
     bingo: Bingo,
     mut return_condition: impl FnMut(usize) -> bool,
-) -> (Board, HashSet<Pos>, Number) {
-    let mut placed: Vec<HashSet<Pos>> = vec![HashSet::new(); bingo.boards.len()];
+) -> (Board, HashSet<Pos, Hasher>, Number) {
+    let mut placed: Vec<HashSet<Pos, Hasher>> = vec![HashSet::default(); bingo.boards.len()];
     let mut boards = bingo.boards;
 
     for &num in &bingo.numbers {
-        let mut won = HashSet::new();
+        let mut won: HashSet<_, Hasher> = HashSet::default();
 
         for i in 0..boards.len() {
             if let Some(&pos) = boards[i].numbers.get(&num) {
@@ -93,7 +97,7 @@ fn solver(
     panic!("no board won :(");
 }
 
-fn score_board(board: &Board, placed: &HashSet<Pos>, final_num: Number) -> u32 {
+fn score_board(board: &Board, placed: &HashSet<Pos, Hasher>, final_num: Number) -> u32 {
     let unmarked_sum: u32 = board
         .numbers
         .iter()
